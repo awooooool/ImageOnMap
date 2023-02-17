@@ -566,6 +566,14 @@ public abstract class ExplorerGui<T> extends ActionGui {
     protected boolean onPutItem() {
         return true;
     }
+    
+    /**
+     * Displays the previous horizontal page, if possible.
+     */
+    @GuiAction
+    public void previous() {
+        setCurrentPageX(currentPageX - 1);
+    }
 
     /**
      * Displays the next horizontal page, if possible.
@@ -581,6 +589,14 @@ public abstract class ExplorerGui<T> extends ActionGui {
     @GuiAction
     public void up() {
         setCurrentPageY(currentPageY - 1);
+    }
+
+    /**
+     * Displays the next vertical page, if possible.
+     */
+    @GuiAction
+    public void down() {
+        setCurrentPageY(currentPageY + 1);
     }
 
     public boolean canGoNext() {
