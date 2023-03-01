@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import fr.moribus.imageonmap.util.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
@@ -228,26 +229,28 @@ public class MapDetailGui extends ExplorerGui<Integer> {
             update();
             return;
         }
-        SignGUI prompt = new SignGUI().lines(map.getName())
+        String[] strings = StringUtils.toSign(map.getName());
+        SignGUI prompt = new SignGUI().lines(strings[0], strings[1], strings[2], strings[3])
                 .onFinish((player, lines) -> {
-                    StringBuilder name = new StringBuilder();
+                    boolean validated = false;
                     for (String line : lines) {
                         if (line != null && !line.trim().isEmpty()) {
-                            if(name.length() > 0) {
-                                name.append(" ");
-                            }
-                            name.append(line);
-                        }
-                        if (name.length() == 0) {
-                            player.sendMessage("Sign can't be empty!"); // TODO: find way to put this into SignGUI
-                            return lines;
+                            validated = true;
+                            break;
                         }
                     }
-                    if (name.toString().equals(map.getName())) {
+                    if(!validated) {
+                        player.sendMessage("Sign can't be empty!"); // TODO: find way to put this into SignGUI
+                        return lines;
+                    }
+
+                    String name = StringUtils.toString(lines);
+
+                    if (name.equals(map.getName())) {
                         close();
                         return null;
                     }
-                    map.rename(name.toString());
+                    map.rename(name);
                     close();
                     return null;
                 });
