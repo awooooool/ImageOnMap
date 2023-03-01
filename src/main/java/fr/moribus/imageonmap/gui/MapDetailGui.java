@@ -36,27 +36,22 @@
 
 package fr.moribus.imageonmap.gui;
 
-import fr.moribus.imageonmap.ImageOnMap;
+import de.rapha149.signgui.SignGUI;
 import fr.moribus.imageonmap.Permissions;
 import fr.moribus.imageonmap.i18n.I;
 import fr.moribus.imageonmap.map.ImageMap;
 import fr.moribus.imageonmap.map.PosterMap;
 import fr.moribus.imageonmap.map.SingleMap;
 import fr.moribus.imageonmap.ui.MapItemManager;
-import fr.zcraft.quartzlib.tools.runners.RunTask;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.conversations.ConversationContext;
-import org.bukkit.conversations.ConversationFactory;
-import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.StringPrompt;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 
 public class MapDetailGui extends ExplorerGui<Integer> {
@@ -233,48 +228,30 @@ public class MapDetailGui extends ExplorerGui<Integer> {
             update();
             return;
         }
-
-        ConversationFactory cf = new ConversationFactory(ImageOnMap.getPlugin(ImageOnMap.class));
-        cf.withLocalEcho(false);
-        cf.withFirstPrompt(new StringPrompt() {
-
-            @Override
-            public @Nullable Prompt acceptInput(@NotNull ConversationContext context, @Nullable String input) {
-                if (!Permissions.RENAME.grantedTo(getPlayer())) {
-                    I.sendT(getPlayer(), "{ce}You are no longer allowed to do that.");
-                    return END_OF_CONVERSATION;
-                }
-    
-                if (input == null || input.isEmpty()) {
-                    I.sendT(getPlayer(), "{ce}Map names can't be empty.");
-                    return END_OF_CONVERSATION;
-                }
-                if (input.equals(map.getName())) {
-                    return END_OF_CONVERSATION;
-                }
-    
-                map.rename(input);
-                I.sendT(getPlayer(), "{cs}Map successfully renamed.");
-    
-                if (getParent() != null) {
-                    RunTask.later(() -> Gui.open(getPlayer(), MapDetailGui.this), 1L);
-    
-                } else {
+        SignGUI prompt = new SignGUI().lines(map.getName())
+                .onFinish((player, lines) -> {
+                    StringBuilder name = new StringBuilder();
+                    for (String line : lines) {
+                        if (line != null && !line.trim().isEmpty()) {
+                            if(name.length() > 0) {
+                                name.append(" ");
+                            }
+                            name.append(line);
+                        }
+                        if (name.length() == 0) {
+                            player.sendMessage("Sign can't be empty!"); // TODO: find way to put this into SignGUI
+                            return lines;
+                        }
+                    }
+                    if (name.toString().equals(map.getName())) {
+                        close();
+                        return null;
+                    }
+                    map.rename(name.toString());
                     close();
-                }
-                
-                return END_OF_CONVERSATION;
-            }
-
-            @Override
-            public @NotNull String getPromptText(@NotNull ConversationContext arg0) {
-                return "";
-            }
-            
-        });
-
-        close();
-        cf.buildConversation(getPlayer()).begin();
+                    return null;
+                });
+        prompt.open(getPlayer());
     }
 
     @GuiAction("delete")
