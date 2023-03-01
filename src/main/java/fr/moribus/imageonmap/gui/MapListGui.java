@@ -234,6 +234,8 @@ public class MapListGui extends ExplorerGui<ImageMap> {
         meta.setLore(lore);
         meta.addItemFlags(ItemFlag.values());
 
+        statistics.setItemMeta(meta);
+
         action("", getSize() - 5, statistics);
     }
 }
